@@ -1,8 +1,13 @@
 /** @format */
 
 import { Link } from "react-router-dom";
-import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
 import { useQuery } from "@tanstack/react-query";
+
+// import useFollow from "../../hooks/useFollow";
+import useFollow from "../../hookes/useFollow";
+
+import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
+import LoadingSpinner from "./LoadingSpinner";
 
 const RightPanel = () => {
     const { data: suggestedUsers, isLoading } = useQuery({
@@ -12,7 +17,7 @@ const RightPanel = () => {
                 const res = await fetch("/api/users/suggested");
                 const data = await res.json();
                 if (!res.ok) {
-                    throw new Error(data.message || "Something went wrong!");
+                    throw new Error(data.error || "Something went wrong!");
                 }
                 return data;
             } catch (error) {
@@ -20,6 +25,8 @@ const RightPanel = () => {
             }
         },
     });
+
+    const { follow, isPending } = useFollow();
 
     if (suggestedUsers?.length === 0)
         return <div className="md:w-64 w-0"></div>;
@@ -68,9 +75,16 @@ const RightPanel = () => {
                                 <div>
                                     <button
                                         className="btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm"
-                                        onClick={(e) => e.preventDefault()}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            follow(user._id);
+                                        }}
                                     >
-                                        Follow
+                                        {isPending ? (
+                                            <LoadingSpinner size="sm" />
+                                        ) : (
+                                            "Follow"
+                                        )}
                                     </button>
                                 </div>
                             </Link>
